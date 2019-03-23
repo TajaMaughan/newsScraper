@@ -34,7 +34,7 @@ app.get("/", function(req, res) {
 app.get("/scrape", function(req, res) {
   axios.get("https://old.reddit.com/r/worldnews/").then(function(response) {
     var $ = cheerio.load(response.data);
-    $(".title").each(function(i, element) {
+    $("p.title").each(function(i, element) {
       var result = {};
       result.title = $(element)
         .children("a")
@@ -42,7 +42,6 @@ app.get("/scrape", function(req, res) {
       result.link = $(element)
         .children("a")
         .attr("href");
-
       db.Article.create(result)
         .then(function(dbArticle) {
           // View the added result in the console
@@ -53,12 +52,11 @@ app.get("/scrape", function(req, res) {
           console.log(err);
         });
     });
-  });
-  res.send("Website scraped.");
+  })
 });
 
-app.get("/articles", function (req, res){
-  db.Article.find({}).then(function (dbArticle) {
+app.get("/articles", function (req, res) {
+  db.Article.find({}).sort({dateScraped: -1}).limit(25).then(function (dbArticle) {
     var hbsobj = {
       article: dbArticle
     }
@@ -69,3 +67,7 @@ app.get("/articles", function (req, res){
 app.listen(PORT, function() {
   console.log("App running at http://localhost:" + PORT);
 });
+
+app.get("/note", function (req, res) {
+  console.log("note page")
+})
